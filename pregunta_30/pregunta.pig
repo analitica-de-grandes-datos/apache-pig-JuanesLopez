@@ -33,4 +33,12 @@ $ pig -x local -f pregunta.pig
 
         >>> Escriba su respuesta a partir de este punto <<<
 */
-
+data = LOAD 'data.csv' using PigStorage(',') AS (N:int,
+                                                name:chararray,
+                                                lastname:chararray,
+                                                date:chararray,
+                                                color:chararray,
+                                                number:int);
+sub_data = FOREACH data GENERATE date, ToString(ToDate(date, 'yyyy-MM-dd'),'dd') AS dd, ToString(ToDate(date, 'yyyy-MM-dd'),'d') AS d, LOWER(ToString(ToDate(date, 'yyyy-MM-dd'),'EEE')) AS day_S;
+replace = FOREACH sub_data GENERATE date, dd, d, (day_S == 'mon'? 'lun':(day_S == 'tue'? 'mar':(day_S == 'wed'? 'mie':(day_S == 'thu'? 'jue':(day_S == 'fri'? 'vie':(day_S == 'sat'? 'sab':(day_S == 'sun'? 'dom':'falso'))))))) AS day_S, (day_S == 'mon'? 'lunes':(day_S == 'tue'? 'martes':(day_S == 'wed'? 'miercoles':(day_S == 'thu'? 'jueves':(day_S == 'fri'? 'viernes':(day_S == 'sat'? 'sabado':(day_S == 'sun'? 'domingo':'falso'))))))) AS EEEE;
+STORE replace INTO 'output' using PigStorage(',');
