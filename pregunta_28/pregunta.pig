@@ -23,3 +23,11 @@ $ pig -x local -f pregunta.pig
         >>> Escriba su respuesta a partir de este punto <<<
 */
 
+data = LOAD 'data.csv' using PigStorage(',') AS (N:int,
+                                                name:chararray,
+                                                lastname:chararray,
+                                                date:chararray,
+                                                color:chararray,
+                                                number:int);
+sub_data = FOREACH data GENERATE REGEX_EXTRACT(date, '^([0-9]*)-.*',1), REGEX_EXTRACT(date, '^[0-9][0-9]([0-9]*)-.*',1);
+STORE sub_data INTO 'output' using PigStorage(',');

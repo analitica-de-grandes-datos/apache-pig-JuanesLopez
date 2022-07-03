@@ -17,3 +17,12 @@ $ pig -x local -f pregunta.pig
         >>> Escriba su respuesta a partir de este punto <<<
 */
 
+data = LOAD 'data.tsv' AS (letters:chararray, list:chararray, codes:chararray);
+sub_data = FOREACH data GENERATE list, codes;
+tokenize_data = FOREACH sub_data GENERATE FLATTEN(TOKENIZE(list, ',')) AS list, FLATTEN(TOKENIZE(codes, ',')) AS codes;
+clear = FOREACH tokenize_data GENERATE REPLACE(list, '([^a-zA-Z])', '') AS list, REPLACE(codes, '([^a-zA-Z])', '') AS keys;
+merged = FOREACH clear GENERATE TOTUPLE(list, keys) as col;
+grouped = GROUP merged BY col;
+counted = FOREACH grouped GENERATE group, COUNT(merged) AS count;
+--ordened = ORDER count BY letters, list, codes asc;
+STORE counted INTO 'output' using PigStorage(',');
